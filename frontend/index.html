@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Discord Control Panel</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 2rem;
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+      .card {
+        background: #1e293b;
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+      }
+      label {
+        display: block;
+        margin-top: 0.5rem;
+      }
+      input, textarea {
+        width: 100%;
+        padding: 0.5rem;
+        margin-top: 0.25rem;
+        border-radius: 0.5rem;
+        border: 1px solid #475569;
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+      button {
+        margin-top: 0.75rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        border: none;
+        background: #38bdf8;
+        color: #0f172a;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .status {
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Discord Control Panel</h1>
+    <p>Steuere Rollen, Nachrichten, Moderation und Tickets über die Website.</p>
+    <a href="/auth/login"><button>Mit Discord anmelden</button></a>
+    <div id="user" class="status"></div>
+
+    <div class="card">
+      <h2>Rolle vergeben</h2>
+      <label>Member ID <input id="role-member" /></label>
+      <label>Role ID <input id="role-id" /></label>
+      <button onclick="addRole()">Rolle vergeben</button>
+      <div id="role-status" class="status"></div>
+    </div>
+
+    <div class="card">
+      <h2>Nachricht posten</h2>
+      <label>Channel ID <input id="message-channel" /></label>
+      <label>Nachricht <textarea id="message-content"></textarea></label>
+      <button onclick="sendMessage()">Senden</button>
+      <div id="message-status" class="status"></div>
+    </div>
+
+    <div class="card">
+      <h2>Moderation: Ban</h2>
+      <label>Member ID <input id="ban-member" /></label>
+      <label>Grund <input id="ban-reason" /></label>
+      <button onclick="banUser()">Bannen</button>
+      <div id="ban-status" class="status"></div>
+    </div>
+
+    <div class="card">
+      <h2>Ticket erstellen</h2>
+      <label>Titel <input id="ticket-title" /></label>
+      <button onclick="createTicket()">Ticket öffnen</button>
+      <div id="ticket-status" class="status"></div>
+    </div>
+
+    <script>
+      async function api(path, payload) {
+        const res = await fetch(path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || 'Fehler');
+        }
+        return res.json();
+      }
+
+      async function loadUser() {
+        const res = await fetch('/api/me');
+        if (res.ok) {
+          const user = await res.json();
+          document.getElementById('user').textContent = `Eingeloggt als ${user.username}#${user.discriminator}`;
+        }
+      }
+
+      async function addRole() {
+        try {
+          await api('/api/roles/add', {
+            member_id: document.getElementById('role-member').value,
+            role_id: document.getElementById('role-id').value,
+          });
+          document.getElementById('role-status').textContent = 'Rolle vergeben.';
+        } catch (error) {
+          document.getElementById('role-status').textContent = error.message;
+        }
+      }
+
+      async function sendMessage() {
+        try {
+          await api('/api/message/send', {
+            channel_id: document.getElementById('message-channel').value,
+            content: document.getElementById('message-content').value,
+          });
+          document.getElementById('message-status').textContent = 'Nachricht gesendet.';
+        } catch (error) {
+          document.getElementById('message-status').textContent = error.message;
+        }
+      }
+
+      async function banUser() {
+        try {
+          await api('/api/moderation/ban', {
+            member_id: document.getElementById('ban-member').value,
+            reason: document.getElementById('ban-reason').value,
+          });
+          document.getElementById('ban-status').textContent = 'User gebannt.';
+        } catch (error) {
+          document.getElementById('ban-status').textContent = error.message;
+        }
+      }
+
+      async function createTicket() {
+        try {
+          const data = await api('/api/tickets', {
+            title: document.getElementById('ticket-title').value,
+          });
+          document.getElementById('ticket-status').textContent = `Ticket erstellt: #${data.channel_id}`;
+        } catch (error) {
+          document.getElementById('ticket-status').textContent = error.message;
+        }
+      }
+
+      loadUser();
+    </script>
+  </body>
+</html>
