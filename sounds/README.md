@@ -1,21 +1,25 @@
-# Sound-Dateien für zufällige Voice-Joins
 
-Platziere hier deine Sound-Dateien für die zufällige Voice-Channel-Funktion.
+**# Yui Bot** 
+made with ❤️ by Matti (:
 
-Unterstützte Formate: MP3, WAV, OGG, FLAC (benötigt FFmpeg)
+# 1. Bitte erstelle zuerst eine .env mit deinem
+DISCORD_CLIENT_ID= # Client ID vom Bot
+DISCORD_CLIENT_SECRET= # Client Secret vom Bot
+DISCORD_BOT_TOKEN= # Dein Discord Bot Token
+DISCORD_REDIRECT_URI= # Die URL für die Discord Oauth von der Website
+DISCORD_GUILD_ID= # Die ID des Discord Servers
+SESSION_SECRET= # Such dir hier ein Passwort aus
 
-## Beispiele:
-- `alarm.mp3` - Alarm-Sound
-- `notification.mp3` - Benachrichtigungston
-- `laugh.wav` - Lacher-Sound
+# 2. requirements.txt installieren
+# Instaliere die Requirements mit
+pip install -r requirements.txt
 
-## Verwendung in der Web-UI:
-1. Hole die Datei in diesen Ordner (`/sounds/`)
-2. Gib in der "Zufälliger Voice-Chat" Karte den Pfad an: `/sounds/meinedatei.mp3`
-3. Aktiviere die Funktion und stelle das Intervall ein
+# 3 Starte den Bot
+python -m backend.app.server 2>&1 | tee server.log
 
-## FFmpeg-Installation (falls nicht vorhanden):
-```bash
-apt-get update
-apt-get install -y ffmpeg
-```
+# (4. Neustart
+ss -ltnp | grep ':8000' || lsof -i :8000
+und danach
+# dann PID killen 
+kill -9 <PID>)
+
