@@ -2,7 +2,8 @@
 **# Yui Bot** 
 made with ❤️ by Matti (:
 
-# 1. Bitte erstelle zuerst eine .env mit deinem
+# 1. Bitte erstelle zuerst eine .env mit cp .env.example .env
+Schreibe dort das rein:
 DISCORD_CLIENT_ID= # Client ID vom Bot
 DISCORD_CLIENT_SECRET= # Client Secret vom Bot
 DISCORD_BOT_TOKEN= # Dein Discord Bot Token
