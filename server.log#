@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/workspaces/Newcoding/backend/app/server.py", line 6, in <module>
+    from .api import create_app
+  File "/workspaces/Newcoding/backend/app/api.py", line 12, in <module>
+    from .bot import DiscordBot
+  File "/workspaces/Newcoding/backend/app/bot.py", line 23, in <module>
+    class DiscordBot(commands.Bot):
+  File "/workspaces/Newcoding/backend/app/bot.py", line 489, in DiscordBot
+    yui = commands.Group(lambda: True)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/discord/ext/commands/core.py", line 1641, in __init__
+    super().__init__(*args, **attrs)
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/discord/ext/commands/core.py", line 1345, in __init__
+    super().__init__(*args, **kwargs)
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/discord/ext/commands/core.py", line 431, in __init__
+    raise TypeError('Callback must be a coroutine.')
+TypeError: Callback must be a coroutine.

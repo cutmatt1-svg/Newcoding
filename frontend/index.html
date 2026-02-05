@@ -1,158 +1,269 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Discord Control Panel</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 2rem;
-        background: #0f172a;
-        color: #e2e8f0;
-      }
-      .card {
-        background: #1e293b;
-        padding: 1.5rem;
-        border-radius: 0.75rem;
-        margin-bottom: 1rem;
-      }
-      label {
-        display: block;
-        margin-top: 0.5rem;
-      }
-      input, textarea {
-        width: 100%;
-        padding: 0.5rem;
-        margin-top: 0.25rem;
-        border-radius: 0.5rem;
-        border: 1px solid #475569;
-        background: #0f172a;
-        color: #e2e8f0;
-      }
-      button {
-        margin-top: 0.75rem;
-        padding: 0.5rem 1rem;
-        border-radius: 0.5rem;
-        border: none;
-        background: #38bdf8;
-        color: #0f172a;
-        font-weight: bold;
-        cursor: pointer;
-      }
-      .status {
-        margin-top: 0.5rem;
-        font-size: 0.9rem;
-      }
+      :root{--bg:#0f172a;--card:#1e293b;--border:#334155;--text:#e2e8f0;--brand:#0ea5e9;--success:#10b981;--danger:#ef4444}
+      *{box-sizing:border-box}
+      body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+      .header{display:flex;justify-content:space-between;align-items:center;padding:1rem;background:var(--card);border-bottom:1px solid var(--border)}
+      .header h1{font-size:1.2rem;margin:0}
+      .wrapper{display:flex}
+      .sidebar{width:250px;background:#0b1220;padding:1rem;border-right:1px solid var(--border);min-height:calc(100vh - 66px)}
+      .sidebar .sidebar-title{color:#94a3b8;margin-top:0.5rem;margin-bottom:0.5rem}
+      .sidebar-item{display:block;padding:0.5rem;border-radius:6px;cursor:pointer;color:var(--text)}
+      .sidebar-item.active{background:#0ea5e940}
+      .main{flex:1;padding:1rem}
+      .section{display:none}
+      .section.active{display:block}
+      .card{background:var(--card);padding:1rem;border-radius:8px;margin-bottom:1rem;border:1px solid var(--border)}
+      .controls label{display:block;margin-top:0.5rem}
+      input,textarea,select,button{width:100%;padding:0.5rem;margin-top:0.25rem;border-radius:6px;border:1px solid #475569;background:transparent;color:var(--text)}
+      button{width:auto;background:var(--brand);color:#041022;font-weight:600;border:none}
+      .status{margin-top:0.5rem;font-size:0.95rem}
+      .small{font-size:0.85rem;color:#94a3b8}
+      @media(max-width:800px){.wrapper{flex-direction:column}.sidebar{width:100%;order:2}.main{order:1}}
     </style>
   </head>
   <body>
-    <h1>Discord Control Panel</h1>
-    <p>Steuere Rollen, Nachrichten, Moderation und Tickets über die Website.</p>
-    <a href="/auth/login"><button>Mit Discord anmelden</button></a>
-    <div id="user" class="status"></div>
+    <header class="header">
+      <h1>⚙️ Control Panel — Discord Moderation</h1>
+      <div id="user-area">
+        <div id="userbox" style="display:inline-flex;align-items:center;gap:0.5rem"></div>
+        <a id="login-link" href="/auth/login"><button id="login-btn">Mit Discord anmelden</button></a>
+        <a id="logout-link" href="/auth/logout" style="display:none"><button id="logout-btn">Abmelden</button></a>
+      </div>
+    </header>
 
-    <div class="card">
-      <h2>Rolle vergeben</h2>
-      <label>Member ID <input id="role-member" /></label>
-      <label>Role ID <input id="role-id" /></label>
-      <button onclick="addRole()">Rolle vergeben</button>
-      <div id="role-status" class="status"></div>
-    </div>
+    <div class="wrapper">
+      <nav class="sidebar" id="sidebar">
+        <div class="sidebar-title">Moderation</div>
+        <span class="sidebar-item active" data-section="overview">📊 Übersicht</span>
+        <span class="sidebar-item" data-section="warn">⚠️ Verwarnung</span>
+        <span class="sidebar-item" data-section="mute">🔇 Stummschalten</span>
+        <span class="sidebar-item" data-section="ban">🔨 Ban</span>
+        <span class="sidebar-item" data-section="appeals">🔓 Ban Appeal</span>
+        <div class="sidebar-title">Admin</div>
+        <span class="sidebar-item" data-section="tickets">🎟️ Tickets</span>
+      </nav>
 
-    <div class="card">
-      <h2>Nachricht posten</h2>
-      <label>Channel ID <input id="message-channel" /></label>
-      <label>Nachricht <textarea id="message-content"></textarea></label>
-      <button onclick="sendMessage()">Senden</button>
-      <div id="message-status" class="status"></div>
-    </div>
+      <main class="main">
+        <section id="overview-section" class="section active">
+          <div class="card">
+            <h2 class="small">Übersicht</h2>
+            <p class="small">Willkommen. Wähle links eine Aktion.</p>
+          </div>
+        </section>
 
-    <div class="card">
-      <h2>Moderation: Ban</h2>
-      <label>Member ID <input id="ban-member" /></label>
-      <label>Grund <input id="ban-reason" /></label>
-      <button onclick="banUser()">Bannen</button>
-      <div id="ban-status" class="status"></div>
-    </div>
+        <section id="ban-section" class="section">
+          <div class="card">
+            <h2>Benutzer bannen</h2>
+            <div class="controls">
+              <label>Mitglied</label>
+              <select id="ban-member"><option value="">-- Mitglied wählen --</option></select>
+              <label>Grund</label>
+              <input id="ban-reason" placeholder="z.B. Regelverstoß" />
+              <button id="ban-btn">Bannen</button>
+              <div id="ban-status" class="status"></div>
+            </div>
+          </div>
+        </section>
 
-    <div class="card">
-      <h2>Ticket erstellen</h2>
-      <label>Titel <input id="ticket-title" /></label>
-      <button onclick="createTicket()">Ticket öffnen</button>
-      <div id="ticket-status" class="status"></div>
+        <section id="appeals-section" class="section">
+          <div class="card">
+            <h2>Ban Appeal einreichen</h2>
+            <div class="controls">
+              <label>Warum sollte der Bann aufgehoben werden?</label>
+              <textarea id="appeal-reason" rows="5" placeholder="Erkläre kurz und sachlich..."></textarea>
+              <label>Zusätzliche Informationen (optional)</label>
+              <textarea id="appeal-evidence" rows="3" placeholder="Beweise, Kontext, IDs..."></textarea>
+              <button id="appeal-submit">Appeal einreichen</button>
+              <div id="appeal-status" class="status"></div>
+            </div>
+          </div>
+
+          <div class="card" id="user-appeals-card">
+            <h3>Deine Appeals</h3>
+            <div id="appeals-list" class="small">Keine Appeals geladen.</div>
+          </div>
+
+          <div class="card" id="admin-appeals-card" style="display:none;">
+            <h3>Alle Appeals (Admin)</h3>
+            <div id="admin-appeals-list" class="small">Keine Appeals geladen.</div>
+          </div>
+        </section>
+
+        <section id="tickets-section" class="section">
+          <div class="card">
+            <h2>Tickets</h2>
+            <p class="small">Ticket-System.</p>
+          </div>
+        </section>
+
+      </main>
     </div>
 
     <script>
-      async function api(path, payload) {
-        const res = await fetch(path, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
+      // Simple API helper
+      async function api(path, method='POST', payload) {
+        const opts = { method, headers: { 'Content-Type': 'application/json' } };
+        if (payload) opts.body = JSON.stringify(payload);
+        const res = await fetch(path, opts);
         if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.detail || 'Fehler');
+          try { const err = await res.json(); throw new Error(err.detail || err.error || 'Fehler'); } catch(e) { throw new Error('Netzwerkfehler'); }
         }
-        return res.json();
+        return res.status===204?null:res.json();
       }
 
+      // Navigation
+      document.querySelectorAll('.sidebar-item').forEach(item=>{
+        item.addEventListener('click', e=>{
+          document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+          document.querySelectorAll('.sidebar-item').forEach(it=>it.classList.remove('active'));
+          item.classList.add('active');
+          const sec = item.getAttribute('data-section');
+          document.getElementById(sec+'-section').classList.add('active');
+          if (sec==='appeals') { loadAppeals(); if (window.__IS_ADMIN) loadAdminAppeals(); }
+        });
+      });
+
+      // Appeal functions
+      document.getElementById('appeal-submit').addEventListener('click', async ()=>{
+        const reason = document.getElementById('appeal-reason').value.trim();
+        const evidence = document.getElementById('appeal-evidence').value.trim();
+        if (!reason) { setStatus('appeal-status','❌ Bitte einen Grund angeben','error'); return; }
+        try {
+          await api('/api/ban-appeal','POST',{ reason, evidence });
+          setStatus('appeal-status','✅ Appeal eingereicht','success');
+          document.getElementById('appeal-reason').value='';
+          document.getElementById('appeal-evidence').value='';
+          loadAppeals();
+        } catch(e) { setStatus('appeal-status','❌ '+e.message,'error'); }
+      });
+
+      async function loadAppeals(){
+        try{
+          const data = await api('/api/ban-appeal','GET');
+          const list = document.getElementById('appeals-list');
+          if (!data || data.length===0) { list.innerHTML='<div class="small">Du hast noch keine Appeals eingereicht.</div>'; return; }
+          list.innerHTML = data.map(a => {
+            const color = a.status==='pending'? '#f59e0b' : a.status==='approved'? '#10b981' : '#ef4444';
+            const statusText = a.status==='pending'? '⏳ Ausstehend' : a.status==='approved'? '✅ Genehmigt' : '❌ Abgelehnt';
+            return `<div style="border-left:4px solid ${color};padding:0.5rem;margin-bottom:0.75rem;"><div class=\"small\">${new Date(a.created_at).toLocaleString('de-DE')}</div><div><strong>Status:</strong> ${statusText}</div><div><strong>Grund:</strong> ${escapeHtml(a.reason)}</div>${a.response?`<div><strong>Antwort:</strong> ${escapeHtml(a.response)}</div>`:''}</div>`;
+          }).join('');
+        }catch(e){ document.getElementById('appeals-list').innerHTML='<div class="small" style="color:#ef4444">Fehler beim Laden</div>'; }
+      }
+
+      function setStatus(id,msg,cls){ const el=document.getElementById(id); if(!el) return; el.textContent=msg; el.className='status '+cls; }
+      function escapeHtml(str){ return String(str).replace(/[&<>\"]+/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[s]||s)); }
+      // ADMIN: load all appeals for moderator UI
+      async function loadAdminAppeals(){
+        try{
+          const data = await api('/api/ban-appeal/all','GET');
+          console.log('[DEBUG] /api/ban-appeal/all response:', data);
+          const list = document.getElementById('admin-appeals-list');
+          if (!data || Object.keys(data).length===0) { list.innerHTML='<div class="small">Keine Appeals vorhanden.</div>'; return; }
+          const html = [];
+          for (const [uid, appeals] of Object.entries(data)){
+            console.log(`[DEBUG] Processing user ${uid} with ${appeals.length} appeals`);
+            if (!Array.isArray(appeals)) {
+              console.warn(`[WARN] Appeals for user ${uid} is not an array:`, appeals);
+              continue;
+            }
+            appeals.forEach((a, idx)=>{
+              const color = a.status==='pending'? '#f59e0b' : a.status==='approved'? '#10b981' : '#ef4444';
+              const statusText = a.status==='pending'? '⏳ Ausstehend' : a.status==='approved'? '✅ Genehmigt' : '❌ Abgelehnt';
+              html.push(`\
+                <div style="border-left:4px solid ${color};padding:0.5rem;margin-bottom:0.75rem;">\
+                  <div class=\"small\">${new Date(a.created_at).toLocaleString('de-DE')} — User: ${uid}</div>\
+                  <div><strong>Status:</strong> ${statusText}</div>\
+                  <div><strong>Grund:</strong> ${escapeHtml(a.reason)}</div>\
+                  ${a.evidence?`<div><strong>Beweise:</strong> ${escapeHtml(a.evidence)}</div>`:''}\
+                  ${a.response?`<div><strong>Antwort:</strong> ${escapeHtml(a.response)}</div>`:''}\
+                  <div style="margin-top:0.5rem">\
+                    <textarea id=\"resp-${uid}-${idx}\" placeholder=\"Antwort an den Nutzer...\" rows=3 style=\"width:100%\"></textarea>\
+                    <div style=\"display:flex;gap:0.5rem;margin-top:0.5rem\">\
+                      <button onclick=\"adminRespond('${uid}',${idx},'approved')\">✅ Genehmigen</button>\
+                      <button onclick=\"adminRespond('${uid}',${idx},'rejected')\">❌ Ablehnen</button>\
+                    </div>\
+                  </div>\
+                </div>\
+              `);
+            });
+          }
+          list.innerHTML = html.join('');
+        }catch(e){ 
+          console.error('[ERROR] loadAdminAppeals failed:', e);
+          document.getElementById('admin-appeals-list').innerHTML=`<div class="small" style="color:#ef4444">Fehler beim Laden: ${escapeHtml(e.message)}</div>`; 
+        }
+      }
+
+      async function adminRespond(userId, appealIndex, status){
+        const ta = document.getElementById(`resp-${userId}-${appealIndex}`);
+        const response = ta ? ta.value.trim() : '';
+        try{
+          await api('/api/ban-appeal/respond','POST',{ target_user_id: parseInt(userId), appeal_index: appealIndex, status, response });
+          alert('Antwort gesendet');
+          loadAdminAppeals();
+        }catch(e){ alert('Fehler: '+e.message); }
+      }
+      // Fetch current user and update header
       async function loadUser() {
-        const res = await fetch('/api/me');
-        if (res.ok) {
-          const user = await res.json();
-          document.getElementById('user').textContent = `Eingeloggt als ${user.username}#${user.discriminator}`;
-        }
-      }
-
-      async function addRole() {
         try {
-          await api('/api/roles/add', {
-            member_id: document.getElementById('role-member').value,
-            role_id: document.getElementById('role-id').value,
-          });
-          document.getElementById('role-status').textContent = 'Rolle vergeben.';
-        } catch (error) {
-          document.getElementById('role-status').textContent = error.message;
+          const u = await api('/api/me', 'GET');
+          console.log('[DEBUG] /api/me response:', u);
+          // Build avatar URL if available
+          let avatarUrl = '';
+          if (u && u.id) {
+            if (u.avatar) {
+              avatarUrl = `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png`;
+            }
+          }
+          const userbox = document.getElementById('userbox');
+          userbox.innerHTML = '';
+          if (avatarUrl) {
+            const img = document.createElement('img'); img.src = avatarUrl; img.style.width = '32px'; img.style.height = '32px'; img.style.borderRadius = '50%'; userbox.appendChild(img);
+          }
+          const member = u.member || {};
+          const name = document.createElement('div'); name.textContent = `${u.username || 'User'}${u.discriminator ? '#'+u.discriminator : ''} ${member.is_admin ? '[👤 ADMIN]' : ''}`; name.className = 'small'; userbox.appendChild(name);
+
+          // toggle links
+          document.getElementById('login-link').style.display = 'none';
+          document.getElementById('logout-link').style.display = 'inline-block';
+
+          // Decide UI visibility: admin vs normal user
+          const isAdmin = !!member.is_admin;
+          window.__IS_ADMIN = isAdmin;
+          console.log('[DEBUG] is_admin:', isAdmin, 'member:', member);
+
+          if (!isAdmin) {
+            // hide all sidebar items except appeals
+            document.querySelectorAll('.sidebar-item').forEach(it => {
+              if (it.getAttribute('data-section') !== 'appeals') it.style.display = 'none';
+            });
+            // ensure appeals is visible/active
+            document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+            document.getElementById('appeals-section').classList.add('active');
+          } else {
+            // show admin panel for appeals
+            document.getElementById('admin-appeals-card').style.display = 'block';
+          }
+        } catch (e) {
+          console.error('[ERROR] loadUser failed:', e);
+          // not logged in — keep login visible
+          document.getElementById('login-link').style.display = 'inline-block';
+          document.getElementById('logout-link').style.display = 'none';
         }
+
+        // load admin appeals if admin
+        if (window.__IS_ADMIN) loadAdminAppeals();
       }
 
-      async function sendMessage() {
-        try {
-          await api('/api/message/send', {
-            channel_id: document.getElementById('message-channel').value,
-            content: document.getElementById('message-content').value,
-          });
-          document.getElementById('message-status').textContent = 'Nachricht gesendet.';
-        } catch (error) {
-          document.getElementById('message-status').textContent = error.message;
-        }
-      }
-
-      async function banUser() {
-        try {
-          await api('/api/moderation/ban', {
-            member_id: document.getElementById('ban-member').value,
-            reason: document.getElementById('ban-reason').value,
-          });
-          document.getElementById('ban-status').textContent = 'User gebannt.';
-        } catch (error) {
-          document.getElementById('ban-status').textContent = error.message;
-        }
-      }
-
-      async function createTicket() {
-        try {
-          const data = await api('/api/tickets', {
-            title: document.getElementById('ticket-title').value,
-          });
-          document.getElementById('ticket-status').textContent = `Ticket erstellt: #${data.channel_id}`;
-        } catch (error) {
-          document.getElementById('ticket-status').textContent = error.message;
-        }
-      }
-
-      loadUser();
+      window.addEventListener('load', ()=>{
+        loadUser();
+      });
     </script>
   </body>
 </html>

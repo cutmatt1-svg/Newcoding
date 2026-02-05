@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from dataclasses import dataclass
 
 
@@ -14,6 +15,16 @@ class Settings:
 
     @staticmethod
     def from_env() -> "Settings":
+        # Load .env file if it exists
+        env_file = Path(__file__).resolve().parents[2] / ".env"
+        if env_file.exists():
+            with open(env_file) as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#"):
+                        key, _, value = line.partition("=")
+                        os.environ.setdefault(key.strip(), value.strip())
+        
         return Settings(
             discord_client_id=os.environ["DISCORD_CLIENT_ID"],
             discord_client_secret=os.environ["DISCORD_CLIENT_SECRET"],
@@ -22,3 +33,4 @@ class Settings:
             discord_guild_id=int(os.environ["DISCORD_GUILD_ID"]),
             session_secret=os.environ["SESSION_SECRET"],
         )
+
